@@ -4,9 +4,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pymcworld-gullyn",
-    version="0.0.5",
-    author="Liam Strilchuk",
+    name="pymcworld",
+	version="1.0.0",
+    author="gullyn",
     author_email="gullyn.games@gmail.com",
     description="Simple Minecraft world editor",
     long_description=long_description,

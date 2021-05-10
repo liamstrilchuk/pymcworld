@@ -8,14 +8,19 @@ class Section:
 	in a chunk.
 	"""
 	
-	def __init__(self, y):
+	def __init__(self, x, y, z):
 		"""
 		Creates the section and the variables it needs.
 
+		:param x: the x position of the section's chunk
 		:param y: the y position of the section, from 0 to 16
+		:param z: the z position of the section's chunk
 		"""
 
+		self.x = x
 		self.y = y
+		self.z = z
+
 		self.palette = Palette()
 		
 		# add air to the palette

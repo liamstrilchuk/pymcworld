@@ -1,4 +1,4 @@
-from nbt.nbt import *
+from .nbt import *
 
 class Option:
 	"""

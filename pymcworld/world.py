@@ -4,7 +4,7 @@ import datetime
 
 from .option import Option
 from random import randint
-from nbt.nbt import *
+from .nbt import *
 from .block import BlockList
 from .shape import ShapeList
 from .gamerules import GameRules
@@ -45,6 +45,9 @@ class World:
 
 		self.gamerules = GameRules()
 		self.options = {}
+		self.world_loaded = False
+		self.world_edited = False
+		self.loaded_regions = {}
 		self.seed = randint(1e8, 1e10)
 		self.set_options(options)
 		self.logger = Logger()
@@ -63,6 +66,8 @@ class World:
 		:param block_type: the block to set
 		"""
 
+		world_edited = True
+
 		# check if position is out of bounds
 		if y < 0 or y > 255:
 			raise ValueError("Given position is out of world boundaries")
@@ -77,6 +82,16 @@ class World:
 		# create the region if it doesn't already exist
 		block_region = self.region_exists(regionX, regionZ)
 		if not block_region:
+			if self.world_loaded:
+				region_path = f"r.{regionX}.{regionZ}.mca"
+				if not region_path in self.loaded_regions:
+					raise ValueError(
+						"Given position is outside of loaded world boundaries"
+					)
+
+				region = Region(regionX, regionZ)
+				region.load(self.loaded_regions[region_path])
+
 			self.regions.append(Region(regionX, regionZ))
 			block_region = self.regions[-1]
 
@@ -92,6 +107,7 @@ class World:
 		:param value: the new value of the rule
 		"""
 
+		self.world_edited = True
 		self.gamerules.set_rule(name, value)
 	
 
@@ -127,6 +143,7 @@ class World:
 		rc = cmod(pos, 512)
 
 		return rc + 512 if rc < 0 else rc
+
 
 	def save(self, folder_name: str) -> bool:
 		"""
@@ -299,6 +316,40 @@ class World:
 				return region
 
 		return False
+
+
+	def load(self, world_folder):
+		"""
+		Load a world from a given folder.
+		Loads each region file as needed, overwriting the original file.
+
+		:param world_folder: the path to the folder containing the world.
+		"""
+
+		# check if the level.dat exists
+		level_dat = os.path.join(world_folder, "level.dat")
+		if not os.path.exists(level_dat):
+			raise ValueError(f"Cannot find file at path {level_dat}")
+
+		# check if the session.lock exists
+		session_lock = os.path.join(world_folder, "session.lock")
+		if not os.path.exists(session_lock):
+			raise ValueError(f"Cannot find file at path {session_lock}")
+
+		# check if the world region data exists
+		region_dir = os.path.join(world_folder, "region")
+		if not os.path.exists(region_dir):
+			raise ValueError(f"Cannot find folder at path {region_dir}")
+
+		# check if region files are present
+		region_list = os.listdir(region_dir)
+		if len(region_list) == 0:
+			raise ValueError(f"No region files found in world folder")
+
+		self.world_loaded = True
+		self.loaded_regions = {
+			v: os.path.join(region_dir, v) for v in region_list
+		}
 
 
 	def create_generator(self):

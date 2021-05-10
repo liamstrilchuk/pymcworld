@@ -2,6 +2,7 @@ from .chunk import Chunk
 from math import ceil
 from .block import BlockList
 import time
+import zlib
 
 
 def cmod(n, base):
@@ -145,4 +146,56 @@ class Region:
 
 		with open(filename, "wb") as f:
 			f.write(location_header + timestamp_header + all_data)
+
+
+	def load(self, file_path):
+		"""
+		Load the region from a .mca file.
+
+		:param file_path: the path to the .mca file
+		"""
+
+		with open(file_path, "rb") as f:
+			data = f.read()
+
+		# load the headers
+		location_header = data[0:4096]
+		timestamp_header = data[4096:8192]
+
+		# go through each chunk in the file
+		for x in range(32):
+			for z in range(32):
+				offset = 4 * (x + 32 * z)
+
+				# find the location and size of the chunk in the file
+				location = int.from_bytes(
+					location_header[(offset):(offset + 3)], "big"
+				)
+				
+				size = int.from_bytes(
+					location_header[offset + 3], "big"
+				)
+
+				# if the chunk hasn't been loaded
+				if location == 0:
+					continue
+
+				# load the data
+				chunk_data = data[
+					(location * 4096):(location * 4096 + size * 4096)
+				]
+
+				byte_size = int.from_bytes(chunk_data[0:4], "big")
+				compression_type = int.from_bytes(chunk_data[4], "big")
+
+				# if the chunk is stored in a format other than zlib
+				if not compression_type == 2:
+					raise ValueError("Chunk compression type not supported")
+
+				uncompressed_data = zlib.decompress(
+					chunk_data[5:(byte_size + 5)]
+				)
+
+				self.chunks[x][z] = Chunk(self.x * 32 + x, self.z * 32 + z)
+				self.chunks[x][z].load(uncompressed_data)
 

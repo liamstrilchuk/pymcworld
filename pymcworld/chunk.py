@@ -1,8 +1,18 @@
-from nbt.nbt import *
+from .nbt import *
 from .section import Section
 from .block import BlockList
 import zlib
 import io
+
+
+class Long_Array(TAG_Long_Array):
+	def __init__(self, name=""):
+		super().__init__(name)
+
+
+	def update_fmt(self, length):
+		self.fmt = Struct(">" + str(length) + "Q")
+
 
 class Chunk:
 	"""
@@ -37,7 +47,7 @@ class Chunk:
 		sectionY = y >> 4
 
 		if not sectionY in self.sections:
-			self.sections[sectionY] = Section(sectionY)
+			self.sections[sectionY] = Section(self.x, sectionY, self.z)
 
 		return self.sections[sectionY].set_block(x, y % 16, z, block)
 
@@ -118,7 +128,6 @@ class Chunk:
 		"""
 
 		palette_tag = TAG_List(name="Palette", type=TAG_Compound)
-		block_data_tag = TAG_Long_Array(name="BlockStates")
 
 		# create the blocks in the palette
 		for block in self.sections[y].palette.blocks:
@@ -130,6 +139,7 @@ class Chunk:
 			# add each block's properties, if they exist
 			if len(block["properties"]) > 0:
 				properties_tag = TAG_Compound()
+				properties_tag.name = "Properties"
 
 				for prop in block["properties"]:
 					properties_tag.tags.append(
@@ -143,7 +153,7 @@ class Chunk:
 
 		# get an array of longs as block data
 		block_data = self.sections[y].get_block_data()
-
+		block_data_tag = Long_Array(name="BlockStates")
 		block_data_tag.value = block_data
 
 		section_tag = TAG_Compound()
@@ -168,4 +178,14 @@ class Chunk:
 		padding = b"\x00" * (4096 - (new_length % 4096))
 
 		return data_length.to_bytes(4, "big") + b"\x02" + data + padding
+
+
+	def load(self, data):
+		"""
+		Load the chunk from the given data.
+
+		:param data: the chunk data
+		"""
+
+		pass
 
