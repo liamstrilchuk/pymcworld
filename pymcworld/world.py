@@ -519,4 +519,4 @@ class World:
 		generator_tag.tags.append(dimension_tag)
 
 		return generator_tag
-_
+
