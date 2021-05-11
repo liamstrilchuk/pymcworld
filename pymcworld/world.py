@@ -168,7 +168,7 @@ class World:
 
 		# set the world name
 		self.options["LevelName"] = Option("LevelName", TAG_String, \
-			foldername.split("/")[-1])
+			folder_name.split("/")[-1])
 
 		# create the folder
 		os.mkdir(folder_name)

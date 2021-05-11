@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pymcworld",
-	version="1.0.0",
+	version="1.0.2",
     author="gullyn",
     author_email="gullyn.games@gmail.com",
     description="Simple Minecraft world editor",
