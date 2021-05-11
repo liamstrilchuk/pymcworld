@@ -168,7 +168,7 @@ class World:
 
 		# set the world name
 		self.options["LevelName"] = Option("LevelName", TAG_String, \
-			folder_name.split("/")[-1])
+			foldername.split("/")[-1])
 
 		# create the folder
 		os.mkdir(folder_name)
@@ -461,7 +461,62 @@ class World:
 		])
 
 		dimension_tag.tags.append(overworld_tag)
+		
+		end_tag = TAG_Compound()
+		end_tag.name = "minecraft:the_end"
+		
+		end_gen_tag = TAG_Compound()
+		end_gen_tag.name = "generator"
+		
+		end_biome_source = TAG_Compound()
+		end_biome_source.name = "biome_source"
+		
+		end_biome_source.tags.extend([
+			TAG_String(name="type", value="minecraft:the_end"),
+			TAG_Long(name="seed", value=self.seed)
+		])
+		
+		end_gen_tag.tags.extend([
+			end_biome_source,
+			TAG_Long(name="seed", value=self.seed),
+			TAG_String(name="settings", value="minecraft:end"),
+			TAG_String(name="type", value="minecraft:noise")
+		])
+		
+		end_tag.tags.extend([
+			end_gen_tag,
+			TAG_String(name="type", value="minecraft:the_end")
+		])
+		
+		nether_tag = TAG_Compound()
+		nether_tag.name = "minecraft:the_nether"
+		
+		nether_gen_tag = TAG_Compound()
+		nether_gen_tag.name = "generator"
+		
+		nether_biome_source = TAG_Compound()
+		nether_biome_source.name = "biome_source"
+		
+		nether_biome_source.tags.extend([
+			TAG_String(name="type", value="minecraft:multi_noise"),
+			TAG_Long(name="seed", value=self.seed),
+			TAG_String(name="preset", value="minecraft:nether")
+		])
+		
+		nether_gen_tag.tags.extend([
+			nether_biome_source,
+			TAG_Long(name="seed", value=self.seed),
+			TAG_String(name="settings", value="minecraft:nether"),
+			TAG_String(name="type", value="minecraft:noise")
+		])
+		
+		nether_tag.tags.extend([
+			nether_gen_tag,
+			TAG_String(name="type", value="minecraft:the_nether")
+		])
+		
+		dimension_tag.tags.extend([end_tag, nether_tag])
 		generator_tag.tags.append(dimension_tag)
 
 		return generator_tag
-
+_
